@@ -1,0 +1,4 @@
+numpy>=1.26
+rapidfuzz>=3.0
+transliterate>=1.10
+openpyxl>=3.1
