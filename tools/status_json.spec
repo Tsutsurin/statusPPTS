@@ -7,6 +7,7 @@ from PyInstaller.utils.hooks import collect_submodules
 ROOT = Path(SPECPATH).resolve().parent
 
 hiddenimports = [
+    'status.adapters.name_normalizer',
     "status.adapters.io.excel_reader_adapter",
     "status.adapters.ml.sentence_transformer_adapter",
     "status.adapters.matchers.rapidfuzz_adapter",

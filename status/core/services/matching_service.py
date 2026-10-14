@@ -108,7 +108,8 @@ class MatchingService:
 
         self._progress("Построение векторного индекса", 0, 1)
         self._vectorizer.build_index(software_list)
-        self._pool = CandidatePool(software_list, channels=self._settings.candidate_channels)
+        self._pool = CandidatePool(
+            software_list, channels=self._settings.candidate_channels)
         self._progress("Построение векторного индекса", 1, 1)
 
         worker = MatchingWorker(self)
@@ -117,7 +118,8 @@ class MatchingService:
             self._progress("Анализ уязвимостей", i, total)
             if (i + 1) % 100 == 0:
                 logger.info("Processed %d / %d vulnerabilities", i + 1, total)
-            result = worker.process_vulnerability(vuln, software_list, kb_rules, journal_index)
+            result = worker.process_vulnerability(
+                vuln, software_list, kb_rules, journal_index)
             results.append(result)
 
         self._progress("Анализ уязвимостей", total, total)
@@ -129,7 +131,8 @@ class MatchingService:
                 len(results),
             )
 
-        n_journal = sum(1 for r in results if r.status_source == SOURCE_JOURNAL)
+        n_journal = sum(
+            1 for r in results if r.status_source == SOURCE_JOURNAL)
         logger.info(
             "Pipeline complete: %d results (%d from journal, %d НЕТ, %d manual review)",
             len(results),
@@ -154,7 +157,8 @@ class MatchingService:
                     try:
                         noise_pats.append(re.compile(line, re.IGNORECASE))
                     except re.error:
-                        logger.warning("Invalid clean_noise pattern skipped: %r", line)
+                        logger.warning(
+                            "Invalid clean_noise pattern skipped: %r", line)
 
         ver_pats = []
         if getattr(self._settings, "clean_versions_enabled", True) and getattr(self._settings, "clean_versions_patterns", ""):
@@ -164,7 +168,8 @@ class MatchingService:
                     try:
                         ver_pats.append(re.compile(line, re.IGNORECASE))
                     except re.error:
-                        logger.warning("Invalid clean_versions pattern skipped: %r", line)
+                        logger.warning(
+                            "Invalid clean_versions pattern skipped: %r", line)
 
         processed_vulns = []
         for v in vulnerabilities:

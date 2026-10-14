@@ -37,7 +37,8 @@ def _words(text: str) -> list[str]:
 
 def _keys(text: str) -> set[str]:
     words = _words(text)
-    keys = {w for w in words if len(w) >= MIN_WORD and not w.isdigit() and w not in _STOP}
+    keys = {w for w in words if len(
+        w) >= MIN_WORD and not w.isdigit() and w not in _STOP}
     keys |= {a + b for a, b in zip(words, words[1:])
              if len(a + b) >= MIN_WORD + 1 and any(_content(w) for w in (a, b))}
     return keys
@@ -69,7 +70,8 @@ class ChannelIndex:
         for index, sw in enumerate(software):
             for key in _keys(sw.name):
                 postings.setdefault(key, []).append(index)
-        self._postings = {k: v for k, v in postings.items() if len(v) <= word_df_max}
+        self._postings = {k: v for k,
+                          v in postings.items() if len(v) <= word_df_max}
         self._vendors: dict[str, list[int]] = {}
         for index, sw in enumerate(software):
             key = vendor_key(sw.vendor)
@@ -95,13 +97,16 @@ class ChannelIndex:
         key = vendor_key(vendor)
         if not key:
             return True
-        nearby = {k for word in key.split() for k in self._vendor_words.get(word, ())}
+        nearby = {k for word in key.split()
+                  for k in self._vendor_words.get(word, ())}
         return any(vendors_match(key, k) for k in nearby)
 
     def vendor(self, vendor: str) -> list[int]:
         key = vendor_key(vendor)
         if not key:
             return []
-        nearby = {k for word in key.split() for k in self._vendor_words.get(word, ())}
-        found = sorted(i for k in nearby if vendors_match(key, k) for i in self._vendors[k])
+        nearby = {k for word in key.split()
+                  for k in self._vendor_words.get(word, ())}
+        found = sorted(i for k in nearby if vendors_match(key, k)
+                       for i in self._vendors[k])
         return found if 0 < len(found) <= self._vendor_max else []

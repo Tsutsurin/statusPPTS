@@ -80,11 +80,14 @@ def detect_ppts_columns(headers: list[str], allow_fallback: bool) -> tuple[int |
     col_vendor = _find_exact_column(headers, PPTS_EXACT_VENDOR)
     if allow_fallback:
         if col_id is None:
-            col_id = PPTS_FALLBACK_COL_ID if PPTS_FALLBACK_COL_ID < len(headers) else None
+            col_id = PPTS_FALLBACK_COL_ID if PPTS_FALLBACK_COL_ID < len(
+                headers) else None
         if col_name is None:
-            col_name = PPTS_FALLBACK_COL_NAME if PPTS_FALLBACK_COL_NAME < len(headers) else None
+            col_name = PPTS_FALLBACK_COL_NAME if PPTS_FALLBACK_COL_NAME < len(
+                headers) else None
         if col_vendor is None:
-            col_vendor = PPTS_FALLBACK_COL_VENDOR if PPTS_FALLBACK_COL_VENDOR < len(headers) else None
+            col_vendor = PPTS_FALLBACK_COL_VENDOR if PPTS_FALLBACK_COL_VENDOR < len(
+                headers) else None
     return col_id, col_name, col_vendor
 
 
@@ -146,7 +149,8 @@ def _read_rows(
         return _read_excel_rows(path, sheet_name=sheet_name, require_sheet=require_sheet)
     if suffix == ".csv":
         return _read_csv_rows(path)
-    raise ReaderError(f"Unsupported file format: {suffix} (expected .xlsx, .csv)")
+    raise ReaderError(
+        f"Unsupported file format: {suffix} (expected .xlsx, .csv)")
 
 
 def _safe_get(row: list[str], idx: int | None) -> str:
@@ -159,7 +163,8 @@ _CVE_RE = re.compile(r"CVE-\d{4}-\d+", re.IGNORECASE)
 
 
 def split_cve_cell(value: str) -> list[str]:
-    found = list(dict.fromkeys(m.upper() for m in _CVE_RE.findall(value or "")))
+    found = list(dict.fromkeys(m.upper()
+                 for m in _CVE_RE.findall(value or "")))
     return found or [value]
 
 
@@ -182,7 +187,8 @@ TSU_PRODUCT_KEYS = ("продукт", "product", "по", "название")
 TSU_SOURCE_KEYS = ("источник", "source", "ссылка", "url")
 
 PPTS_ID_KEYS = ("id пптс", "id", "идентификатор")
-PPTS_NAME_KEYS = ("название птс", "название", "наименование", "name", "software")
+PPTS_NAME_KEYS = ("название птс", "название",
+                  "наименование", "name", "software")
 PPTS_VENDOR_KEYS = ("вендор", "vendor", "производитель", "разработчик")
 
 JOURNAL_COL_RESPONSIBLE = 2
@@ -220,7 +226,8 @@ def auto_detect_ppts_mapping(path: str | Path) -> PptsColumnMapping:
     found_nr = _header_label(raw_headers[0] if raw_headers else "") == PPTS_NR_MARK or (
         raw_headers and str(raw_headers[0]).strip().startswith(PPTS_NR_MARK)
     )
-    col_id, col_name, col_vendor = detect_ppts_columns(raw_headers, allow_fallback=found_nr)
+    col_id, col_name, col_vendor = detect_ppts_columns(
+        raw_headers, allow_fallback=found_nr)
     return PptsColumnMapping(
         file_path=str(path),
         col_id=col_id,

@@ -1,6 +1,7 @@
 """Чтение ТСУ, ППТС и журнала публикаций из Excel и CSV."""
 
 from __future__ import annotations
+from status.core.services.normalizer import parse_fstek_pairs
 
 import copy
 import logging
@@ -38,9 +39,6 @@ from status.adapters.io.reader_helpers import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-from status.core.services.normalizer import parse_fstek_pairs
 
 
 class ExcelReaderAdapter(DataReaderPort):
@@ -99,7 +97,8 @@ class ExcelReaderAdapter(DataReaderPort):
             if pairs:
                 first_pair = pairs[0]
                 vendor = first_pair.vendor
-                is_fstek = (combined_product.count(" - ") >= 2) or ("," in combined_product and " - " in combined_product)
+                is_fstek = (combined_product.count(
+                    " - ") >= 2) or ("," in combined_product and " - " in combined_product)
                 if is_fstek:
                     product = combined_product
                 else:
@@ -124,7 +123,8 @@ class ExcelReaderAdapter(DataReaderPort):
                     )
                 )
 
-        logger.info("Read %d vulnerabilities from %s", len(vulnerabilities), path.name)
+        logger.info("Read %d vulnerabilities from %s",
+                    len(vulnerabilities), path.name)
         return vulnerabilities
 
     def read_ppts(
@@ -151,7 +151,8 @@ class ExcelReaderAdapter(DataReaderPort):
         header_row = max(0, min(header_row, len(rows) - 1))
         headers = [str(h) for h in rows[header_row]]
         found_nr = bool(headers) and (
-            _header_label(headers[0]) == "Nr." or str(headers[0]).strip().startswith("Nr.")
+            _header_label(headers[0]) == "Nr." or str(
+                headers[0]).strip().startswith("Nr.")
         )
 
         if mapping is not None and mapping.col_name is not None:
@@ -164,7 +165,8 @@ class ExcelReaderAdapter(DataReaderPort):
             header_row = detected.header_row
             headers = [str(h) for h in rows[header_row]]
             if col_name is None:
-                col_id, col_name, col_vendor = detect_ppts_columns(headers, allow_fallback=found_nr)
+                col_id, col_name, col_vendor = detect_ppts_columns(
+                    headers, allow_fallback=found_nr)
 
         if col_name is None:
             raise ReaderError(
@@ -173,7 +175,7 @@ class ExcelReaderAdapter(DataReaderPort):
             )
 
         software_list: list[Software] = []
-        for row_idx, row in enumerate(rows[header_row + 1 :], start=header_row + 2):
+        for row_idx, row in enumerate(rows[header_row + 1:], start=header_row + 2):
             name = _safe_get(row, col_name)
             vendor = _safe_get(row, col_vendor)
             sw_id = _safe_get(row, col_id) or str(row_idx - 1)
@@ -185,10 +187,12 @@ class ExcelReaderAdapter(DataReaderPort):
             display_name = name if name else vendor
 
             software_list.append(
-                Software(id=sw_id, name=display_name, vendor=vendor, source=source)
+                Software(id=sw_id, name=display_name,
+                         vendor=vendor, source=source)
             )
 
-        logger.info("Read %d software entries from %s", len(software_list), path.name)
+        logger.info("Read %d software entries from %s",
+                    len(software_list), path.name)
         return software_list
 
     def read_journal(
@@ -201,7 +205,8 @@ class ExcelReaderAdapter(DataReaderPort):
             raise ReaderError(f"File not found: {path}")
 
         try:
-            rows = _read_rows(path, sheet_name=JOURNAL_SHEET_NAME, require_sheet=True)
+            rows = _read_rows(
+                path, sheet_name=JOURNAL_SHEET_NAME, require_sheet=True)
         except ReaderError:
             raise
         except Exception as exc:
@@ -272,10 +277,12 @@ class ExcelReaderAdapter(DataReaderPort):
         if not path.exists():
             return set()
         try:
-            rows = _read_rows(path, sheet_name=JOURNAL_SHEET_NAME, require_sheet=False)
+            rows = _read_rows(
+                path, sheet_name=JOURNAL_SHEET_NAME, require_sheet=False)
             if len(rows) < 2:
                 return set()
-            col_source = _find_column([str(h) for h in rows[0]], TSU_SOURCE_KEYS)
+            col_source = _find_column([str(h)
+                                      for h in rows[0]], TSU_SOURCE_KEYS)
             if col_source is None:
                 col_source = 9
             urls = set()
@@ -287,5 +294,6 @@ class ExcelReaderAdapter(DataReaderPort):
                         urls.add(val_str)
             return urls
         except Exception:
-            logger.exception("Failed to read source URLs from journal %s", path.name)
+            logger.exception(
+                "Failed to read source URLs from journal %s", path.name)
             return set()

@@ -8,7 +8,8 @@ from dataclasses import dataclass
 
 BduId = tuple[int, int]
 
-_ID_IN_TEXT_RE = re.compile(r"(?:vul/|BDU:\s*)(\d{4})-(\d{1,6})\b", re.IGNORECASE)
+_ID_IN_TEXT_RE = re.compile(
+    r"(?:vul/|BDU:\s*)(\d{4})-(\d{1,6})\b", re.IGNORECASE)
 _BARE_ID_RE = re.compile(r"^(?:BDU:\s*)?(\d{4})-(\d{1,6})$", re.IGNORECASE)
 
 

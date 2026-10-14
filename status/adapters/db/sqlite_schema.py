@@ -78,7 +78,8 @@ def _run_migrations(conn: sqlite3.Connection, current_version: int) -> None:
                     cursor.execute(sql)
                 except sqlite3.OperationalError as exc:
                     if "duplicate column" in str(exc).lower():
-                        logger.debug("Column already exists, skipping: %s", exc)
+                        logger.debug(
+                            "Column already exists, skipping: %s", exc)
                     else:
                         raise
     cursor.execute("UPDATE schema_version SET version = ?", (SCHEMA_VERSION,))
@@ -108,10 +109,12 @@ def init_db(db_path: str | Path) -> sqlite3.Connection:
         )
         conn.commit()
     else:
-        ver_row = cursor.execute("SELECT version FROM schema_version").fetchone()
+        ver_row = cursor.execute(
+            "SELECT version FROM schema_version").fetchone()
         current = ver_row[0] if ver_row else 1
         if current < SCHEMA_VERSION:
             _run_migrations(conn, current)
 
-    logger.info("Database initialized at %s (schema v%d)", db_path, SCHEMA_VERSION)
+    logger.info("Database initialized at %s (schema v%d)",
+                db_path, SCHEMA_VERSION)
     return conn

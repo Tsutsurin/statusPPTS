@@ -55,8 +55,10 @@ class CandidatePool:
             taken.add(index)
             if gate_ok or channel(index):
                 pool.append((sw, score, channel(index), not gate_ok))
-        scores = {self._position.get(id(sw), -1): score for sw, score in ranked}
-        extras = sorted((word | by_vendor) - taken, key=lambda i: (-scores.get(i, 0.0), i))
+        scores = {self._position.get(
+            id(sw), -1): score for sw, score in ranked}
+        extras = sorted((word | by_vendor) - taken,
+                        key=lambda i: (-scores.get(i, 0.0), i))
         pool += [(self._software[i], scores.get(i, 0.0), channel(i), True)
                  for i in extras[:CHANNEL_EXTRA]]
         return pool

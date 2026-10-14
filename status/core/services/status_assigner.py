@@ -92,7 +92,8 @@ class StatusAssigner:
             )
 
         best_candidate = candidates[0]
-        runner_up = candidates[1].combined_score if len(candidates) > 1 else float("-inf")
+        runner_up = candidates[1].combined_score if len(
+            candidates) > 1 else float("-inf")
         auto = (best_candidate.combined_score >= self._auto_match_threshold
                 and best_candidate.combined_score - runner_up >= self._auto_match_margin)
         assigned_ppts_id = None
@@ -183,7 +184,8 @@ class StatusAssigner:
             try:
                 return bool(re.search(pattern, text, re.IGNORECASE))
             except re.error:
-                logger.warning("Invalid regex in rule %s: %r", rule_id, pattern)
+                logger.warning("Invalid regex in rule %s: %r",
+                               rule_id, pattern)
                 return False
 
         if match_type == MATCH_VECTOR:

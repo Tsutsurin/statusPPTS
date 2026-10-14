@@ -91,9 +91,12 @@ class MatchingWorker:
             )
 
         block_auto_yes_with_os(pair_results, self._settings)
-        cve_key = vuln.cve_id.strip().upper() if self._service._is_valid_cve(vuln.cve_id) else ""
-        journal_hits = journal_index.get(cve_key, []) if journal_index and cve_key else []
-        journal_no_candidates = apply_journal_to_pairs(pair_results, journal_hits)
+        cve_key = vuln.cve_id.strip().upper(
+        ) if self._service._is_valid_cve(vuln.cve_id) else ""
+        journal_hits = journal_index.get(
+            cve_key, []) if journal_index and cve_key else []
+        journal_no_candidates = apply_journal_to_pairs(
+            pair_results, journal_hits)
         for pair_res in pair_results:
             pair_res.original_status = pair_res.status
             pair_res.original_ppts_id = pair_res.ppts_id
@@ -112,7 +115,8 @@ class MatchingWorker:
         return AnalysisResult(
             vulnerability=vuln,
             status=overall_status,
-            status_source=overall_source({pr.status_source for pr in pair_results}),
+            status_source=overall_source(
+                {pr.status_source for pr in pair_results}),
             candidates=_merge_candidates(pair_results),
             ppts_id=overall_ppts,
             match_type=_overall_match_type(pair_results, bool(journal_hits)),
@@ -130,7 +134,8 @@ class MatchingWorker:
     ) -> AnalysisResult:
         del software_list
         if kb_rules:
-            matched_rule, matched = self._status_assigner.check_knowledge_base(vuln, kb_rules)
+            matched_rule, matched = self._status_assigner.check_knowledge_base(
+                vuln, kb_rules)
             if matched and matched_rule is not None:
                 self._count_kb_hit(vuln.cve_id, matched_rule.id)
                 return self._status_assigner.assign_status(vuln, [], kb_rule=matched_rule)
@@ -139,9 +144,12 @@ class MatchingWorker:
             found = self._pool.gather(vuln.raw_text, vuln.vendor or "", vuln.product or "",
                                       self._vectorizer, self._settings)
         else:
-            vector = self._vectorizer.search(vuln.raw_text, top_n=self._settings.top_n)
-            gate_ok = any(score >= self._settings.vector_threshold for _, score in vector)
-            found = [(sw, score, "", False) for sw, score in vector] if gate_ok else []
+            vector = self._vectorizer.search(
+                vuln.raw_text, top_n=self._settings.top_n)
+            gate_ok = any(
+                score >= self._settings.vector_threshold for _, score in vector)
+            found = [(sw, score, "", False)
+                     for sw, score in vector] if gate_ok else []
         if not found:
             return self._status_assigner.assign_status(vuln, [])
 
@@ -149,11 +157,14 @@ class MatchingWorker:
         vector_scores = [score for _, score, _, _ in found]
         direction = self._settings.transliteration_direction
         texts = [
-            scoring_texts(vuln.product or vuln.raw_text, vuln.vendor, sw.name, sw.vendor, direction)
+            scoring_texts(vuln.product or vuln.raw_text,
+                          vuln.vendor, sw.name, sw.vendor, direction)
             for sw in candidate_sw
         ]
-        fuzzy_scores = [self._fuzzy_matcher.compute_score(query, name) for query, name in texts]
-        exact_scores = [self._exact_matcher.score(query, name) for query, name in texts]
+        fuzzy_scores = [self._fuzzy_matcher.compute_score(
+            query, name) for query, name in texts]
+        exact_scores = [self._exact_matcher.score(
+            query, name) for query, name in texts]
         candidates = self._scorer.build_candidates(
             candidate_sw, vector_scores, fuzzy_scores, exact_scores
         )
@@ -161,7 +172,8 @@ class MatchingWorker:
         for candidate in candidates:
             candidate.channel, candidate.channel_only = channels.get(id(candidate.software),
                                                                      ("", False))
-        candidates = cut_for_duty(_trim_candidates(candidates, self._settings), self._settings)
+        candidates = cut_for_duty(_trim_candidates(
+            candidates, self._settings), self._settings)
         if confident_no(vuln.vendor or "", candidates, self._settings, self._pool):
             floor = self._settings.vector_threshold if self._settings.hide_weak_in_auto_no else None
             return self._status_assigner.assign_confident_no(vuln, candidates, floor)
@@ -186,13 +198,15 @@ def _trim_candidates(candidates: list[MatchCandidate], settings) -> list[MatchCa
         return candidates
 
     if mode == "vector_threshold":
-        kept = [c for c in candidates if c.vector_score >= settings.vector_threshold]
+        kept = [c for c in candidates if c.vector_score >=
+                settings.vector_threshold]
     elif mode == "relative":
         ratio = getattr(settings, "candidate_relative", 0.75)
         best = candidates[0].combined_score
         kept = [c for c in candidates if c.combined_score >= best * ratio]
     else:
-        logger.warning("Unknown candidate_mode %r, keeping all candidates", mode)
+        logger.warning(
+            "Unknown candidate_mode %r, keeping all candidates", mode)
         return candidates
 
     return kept or candidates[:1]
@@ -231,7 +245,8 @@ def _ensure_vuln_pairs(vuln: Vulnerability) -> None:
         for vendor, prod, versions in parsed_groups:
             raw = " ".join(part for part in (vendor, prod) if part)
             vuln.pairs.append(
-                VulnerabilityPair(vendor=vendor, product=prod, versions=versions, raw_text=raw)
+                VulnerabilityPair(vendor=vendor, product=prod,
+                                  versions=versions, raw_text=raw)
             )
         return
     parts: list[str] = []
@@ -248,7 +263,8 @@ def _ensure_vuln_pairs(vuln: Vulnerability) -> None:
     for part in parts:
         raw = " ".join(item for item in (vuln.vendor, part) if item)
         vuln.pairs.append(
-            VulnerabilityPair(vendor=vuln.vendor, product=part, versions=[], raw_text=raw)
+            VulnerabilityPair(vendor=vuln.vendor, product=part,
+                              versions=[], raw_text=raw)
         )
 
 

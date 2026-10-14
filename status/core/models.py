@@ -35,6 +35,8 @@ class Software:
     name: str
     vendor: str
     source: str
+    original_name: str = ''
+    original_vendor: str = ''
 
 
 @dataclass
@@ -74,7 +76,7 @@ class PairAnalysisResult:
     exclude_from_report: bool = False
     include_only: bool = False
     match_type: str = ""
-    
+
     original_status: str = ""
     original_ppts_id: str | None = None
     original_status_source: str = ""

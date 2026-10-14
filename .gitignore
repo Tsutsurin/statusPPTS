@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+.data/
+config/normalization.json
+status_result*.json

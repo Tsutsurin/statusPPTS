@@ -26,7 +26,8 @@ def normalize_text(text: str, direction: str = "to_en") -> str:
     if direction == "to_ru":
         return _to_cyrillic(text)
 
-    logger.warning("Unknown transliteration direction: %r, defaulting to 'to_en'", direction)
+    logger.warning(
+        "Unknown transliteration direction: %r, defaulting to 'to_en'", direction)
     return _to_latin(text)
 
 
@@ -63,8 +64,9 @@ def parse_fstek_pairs(combined_product: str) -> list[tuple[str, str, list[str]]]
         return []
 
     if " - " in combined_product:
-        raw_parts = [p.strip() for p in combined_product.split(",") if p.strip()]
-        
+        raw_parts = [p.strip()
+                     for p in combined_product.split(",") if p.strip()]
+
         merged_parts = []
         temp = []
         for part in raw_parts:
@@ -77,7 +79,7 @@ def parse_fstek_pairs(combined_product: str) -> list[tuple[str, str, list[str]]]
                 merged_parts[-1] = merged_parts[-1] + ", " + ", ".join(temp)
             else:
                 merged_parts.append(", ".join(temp))
-                
+
         groups: list[tuple[str, str, list[str]]] = []
         for item in merged_parts:
             parts = [p.strip() for p in item.split(" - ")]
@@ -85,13 +87,15 @@ def parse_fstek_pairs(combined_product: str) -> list[tuple[str, str, list[str]]]
                 vendor = parts[0]
                 products_raw = parts[1]
                 version = " - ".join(parts[2:])
-                prods = [pr.strip() for pr in products_raw.split(",") if pr.strip()]
+                prods = [pr.strip()
+                         for pr in products_raw.split(",") if pr.strip()]
                 for prod in prods:
                     _append_to_groups(groups, vendor, prod, version)
             elif len(parts) == 2:
                 vendor = parts[0]
                 products_raw = parts[1]
-                prods = [pr.strip() for pr in products_raw.split(",") if pr.strip()]
+                prods = [pr.strip()
+                         for pr in products_raw.split(",") if pr.strip()]
                 for prod in prods:
                     _append_to_groups(groups, vendor, prod, "")
             else:

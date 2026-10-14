@@ -1,0 +1,12 @@
+{
+  "enabled": false,
+  "url": "https://AI-SERVER/v1/chat/completions",
+  "model": "MODEL-NAME",
+  "api_key_env": "STATUS_AI_KEY",
+  "prompt_file": "normalization_prompt.txt",
+  "cache_file": "../.data/name_normalization_cache.json",
+  "timeout_seconds": 120,
+  "batch_size": 20,
+  "json_mode": true,
+  "confirmed_aliases": []
+}

@@ -16,8 +16,10 @@ def _row_to_rule(row: sqlite3.Row) -> KnowledgeBaseRule:
         id=row["id"],
         pattern=row["pattern"],
         match_type=row["match_type"],
-        vendor_pattern=row["vendor_pattern"] if "vendor_pattern" in row.keys() else "",
-        vendor_match_type=row["vendor_match_type"] if "vendor_match_type" in row.keys() else "contains",
+        vendor_pattern=row["vendor_pattern"] if "vendor_pattern" in row.keys(
+        ) else "",
+        vendor_match_type=row["vendor_match_type"] if "vendor_match_type" in row.keys(
+        ) else "contains",
         status=row["status"],
         ppts_id=row["ppts_id"],
         vector_threshold=row["vector_threshold"],
@@ -43,13 +45,13 @@ class SqliteRepository(RuleRepositoryPort, ScriptConfigPort):
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
 
-
     def get_all_rules(self) -> list[KnowledgeBaseRule]:
         cursor = self._conn.execute("SELECT * FROM rules ORDER BY id")
         return [_row_to_rule(row) for row in cursor.fetchall()]
 
     def get_rule_by_id(self, rule_id: int) -> KnowledgeBaseRule | None:
-        cursor = self._conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,))
+        cursor = self._conn.execute(
+            "SELECT * FROM rules WHERE id = ?", (rule_id,))
         row = cursor.fetchone()
         return _row_to_rule(row) if row else None
 
@@ -128,7 +130,8 @@ class SqliteRepository(RuleRepositoryPort, ScriptConfigPort):
         return updated
 
     def delete_rule(self, rule_id: int) -> bool:
-        cursor = self._conn.execute("DELETE FROM rules WHERE id = ?", (rule_id,))
+        cursor = self._conn.execute(
+            "DELETE FROM rules WHERE id = ?", (rule_id,))
         self._conn.commit()
         deleted = cursor.rowcount > 0
         if deleted:
@@ -163,9 +166,9 @@ class SqliteRepository(RuleRepositoryPort, ScriptConfigPort):
         )
         return [_row_to_rule(row) for row in cursor.fetchall()]
 
-
     def get_all_scripts(self) -> list[ScriptConfig]:
-        cursor = self._conn.execute("SELECT * FROM scripts_config ORDER BY priority, id")
+        cursor = self._conn.execute(
+            "SELECT * FROM scripts_config ORDER BY priority, id")
         return [_row_to_script_config(row) for row in cursor.fetchall()]
 
     def get_enabled_scripts(self) -> list[ScriptConfig]:
@@ -180,7 +183,8 @@ class SqliteRepository(RuleRepositoryPort, ScriptConfigPort):
             INSERT INTO scripts_config (script_path, condition, priority, enabled)
             VALUES (?, ?, ?, ?)
             """,
-            (config.script_path, config.condition, config.priority, int(config.enabled)),
+            (config.script_path, config.condition,
+             config.priority, int(config.enabled)),
         )
         self._conn.commit()
         return cursor.lastrowid
@@ -204,6 +208,7 @@ class SqliteRepository(RuleRepositoryPort, ScriptConfigPort):
         return cursor.rowcount > 0
 
     def delete_script_config(self, config_id: int) -> bool:
-        cursor = self._conn.execute("DELETE FROM scripts_config WHERE id = ?", (config_id,))
+        cursor = self._conn.execute(
+            "DELETE FROM scripts_config WHERE id = ?", (config_id,))
         self._conn.commit()
         return cursor.rowcount > 0

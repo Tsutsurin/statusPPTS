@@ -164,7 +164,8 @@ def apply_journal_to_pairs(
     for pair in pair_results:
         coverage_ids = _pair_candidate_ids(pair)
         matched = [item for item in coverage_ids if item in journal_id_set]
-        extras = [item for item in split_ppts_ids(pair.ppts_id) if item not in journal_id_set]
+        extras = [item for item in split_ppts_ids(
+            pair.ppts_id) if item not in journal_id_set]
         matched_per_pair.append(matched)
         extras_per_pair.append(extras)
         covered.extend(matched)

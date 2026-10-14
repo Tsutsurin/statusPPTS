@@ -27,7 +27,8 @@ def vendor_tokens(vendors: list[str], direction: str = "to_en") -> set[str]:
 
 def strip_vendor(text: str, tokens: set[str], direction: str = "to_en") -> str:
     normalized = normalize_text(text or "", direction=direction) or ""
-    kept = [raw for raw in normalized.split() if _clean(raw) and _clean(raw) not in tokens]
+    kept = [raw for raw in normalized.split() if _clean(
+        raw) and _clean(raw) not in tokens]
     return " ".join(kept)
 
 
@@ -43,6 +44,8 @@ def scoring_texts(
     candidate = strip_vendor(candidate_name, tokens, direction)
     if query and candidate:
         return query, candidate
-    full_query = (normalize_text(product or "", direction=direction) or "").strip()
-    full_candidate = (normalize_text(candidate_name or "", direction=direction) or "").strip()
+    full_query = (normalize_text(
+        product or "", direction=direction) or "").strip()
+    full_candidate = (normalize_text(candidate_name or "",
+                      direction=direction) or "").strip()
     return full_query, full_candidate

@@ -49,19 +49,19 @@ class FallbackTfIdfVectorizer:
             ngrams = set(self._get_ngrams(text))
             for ng in ngrams:
                 doc_freqs[ng] = doc_freqs.get(ng, 0) + 1
-        
+
         keep_common = self.select_by != "rarity"
         sorted_ngrams = sorted(
             doc_freqs.items(), key=lambda item: item[1], reverse=keep_common
         )[: self.max_features]
         self.vocab = {ng: idx for idx, (ng, _) in enumerate(sorted_ngrams)}
-        
+
         n_docs = len(texts)
         self.idf = np.zeros(len(self.vocab), dtype=np.float32)
         for ng, idx in self.vocab.items():
             df = doc_freqs[ng]
             self.idf[idx] = np.log((1 + n_docs) / (1 + df)) + 1.0
-            
+
         return self.transform(texts)
 
     def transform(self, texts: list[str]) -> NDArray[np.float32]:
@@ -72,7 +72,7 @@ class FallbackTfIdfVectorizer:
                 if ng in self.vocab:
                     vectors[i, self.vocab[ng]] += 1.0
             vectors[i] = vectors[i] * self.idf
-            
+
         norms = np.linalg.norm(vectors, axis=1, keepdims=True)
         return vectors / np.clip(norms, a_min=1e-9, a_max=None)
 
@@ -131,7 +131,7 @@ class SentenceTransformerAdapter(VectorizerPort):
                 )
                 return self._fallback_vectorizer.fit_transform(texts)
             return self._fallback_vectorizer.transform(texts)
-            
+
         try:
             session, tokenizer = self._ensure_model()
             if self._fallback_mode:
@@ -143,10 +143,10 @@ class SentenceTransformerAdapter(VectorizerPort):
 
         try:
             inputs = tokenizer(
-                texts, 
-                padding=True, 
-                truncation=True, 
-                max_length=128, 
+                texts,
+                padding=True,
+                truncation=True,
+                max_length=128,
                 return_tensors="np"
             )
             ort_inputs = {
@@ -154,17 +154,22 @@ class SentenceTransformerAdapter(VectorizerPort):
                 "attention_mask": inputs["attention_mask"].astype(np.int64)
             }
             if "token_type_ids" in inputs:
-                ort_inputs["token_type_ids"] = inputs["token_type_ids"].astype(np.int64)
+                ort_inputs["token_type_ids"] = inputs["token_type_ids"].astype(
+                    np.int64)
             else:
-                ort_inputs["token_type_ids"] = np.zeros_like(ort_inputs["input_ids"])
+                ort_inputs["token_type_ids"] = np.zeros_like(
+                    ort_inputs["input_ids"])
 
             outputs = session.run(None, ort_inputs)
             last_hidden_state = outputs[0]
 
             attention_mask = inputs["attention_mask"]
-            input_mask_expanded = np.expand_dims(attention_mask, -1).astype(np.float32)
-            sum_embeddings = np.sum(last_hidden_state * input_mask_expanded, axis=1)
-            sum_mask = np.clip(input_mask_expanded.sum(axis=1), a_min=1e-9, a_max=None)
+            input_mask_expanded = np.expand_dims(
+                attention_mask, -1).astype(np.float32)
+            sum_embeddings = np.sum(
+                last_hidden_state * input_mask_expanded, axis=1)
+            sum_mask = np.clip(input_mask_expanded.sum(
+                axis=1), a_min=1e-9, a_max=None)
             embeddings = sum_embeddings / sum_mask
 
             norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
@@ -180,7 +185,8 @@ class SentenceTransformerAdapter(VectorizerPort):
                 self._fallback_vectorizer = FallbackTfIdfVectorizer(
                     max_features=self._max_features, select_by=self._vocab_mode
                 )
-                self._index_embeddings = self._fallback_vectorizer.fit_transform(names)
+                self._index_embeddings = self._fallback_vectorizer.fit_transform(
+                    names)
             return self.encode(texts)
 
     def build_index(self, software_list: list[Software]) -> None:
@@ -190,7 +196,7 @@ class SentenceTransformerAdapter(VectorizerPort):
             for sw in software_list
         ]
         logger.info("Encoding %d software entries...", len(names))
-        
+
         try:
             self._ensure_model()
         except Exception as e:
@@ -200,9 +206,10 @@ class SentenceTransformerAdapter(VectorizerPort):
         if self._fallback_mode:
             logger.info("Building NumPy TF-IDF index...")
             self._fallback_vectorizer = FallbackTfIdfVectorizer(
-                    max_features=self._max_features, select_by=self._vocab_mode
-                )
-            self._index_embeddings = self._fallback_vectorizer.fit_transform(names)
+                max_features=self._max_features, select_by=self._vocab_mode
+            )
+            self._index_embeddings = self._fallback_vectorizer.fit_transform(
+                names)
         else:
             self._index_embeddings = self.encode(names)
         logger.info("Index built: %d entries", len(self._software_list))
@@ -219,7 +226,8 @@ class SentenceTransformerAdapter(VectorizerPort):
         if len(candidate_indices) == 0:
             return []
 
-        sorted_idx = candidate_indices[np.argsort(scores[candidate_indices])[::-1]][:top_n]
+        sorted_idx = candidate_indices[np.argsort(
+            scores[candidate_indices])[::-1]][:top_n]
         return [(self._software_list[idx], float(scores[idx])) for idx in sorted_idx]
 
     def batch_search(
@@ -245,8 +253,10 @@ class SentenceTransformerAdapter(VectorizerPort):
                 all_results.append([])
                 continue
 
-            sorted_idx = candidate_indices[np.argsort(scores[candidate_indices])[::-1]][:top_n]
-            results = [(self._software_list[idx], float(scores[idx])) for idx in sorted_idx]
+            sorted_idx = candidate_indices[np.argsort(
+                scores[candidate_indices])[::-1]][:top_n]
+            results = [(self._software_list[idx], float(scores[idx]))
+                       for idx in sorted_idx]
             all_results.append(results)
 
         return all_results
